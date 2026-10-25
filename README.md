@@ -1,5 +1,5 @@
 # stick19 for Windows 11
-*Developed by unstable19*
+
 
 A high-performance, lightweight desktop sticky note application designed specifically for **Windows 11** (and Windows 10) that behaves like a native desktop widget attached directly to the Windows desktop shell layer, rather than a floating application window.
 
