@@ -1,8 +1,10 @@
-# Build and Output Folders
-bin/
+# Intermediate build folders
 obj/
 src/obj/
 tests/obj/
+
+# Debug symbols
+*.pdb
 
 # Visual Studio files
 .vs/
