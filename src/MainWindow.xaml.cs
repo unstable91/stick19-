@@ -474,6 +474,9 @@ namespace DesktopStickyNote
                 return;
             }
 
+            Style pStyle = new Style(typeof(Paragraph));
+            pStyle.Setters.Add(new Setter(Paragraph.MarginProperty, new Thickness(0)));
+
             string trimmed = savedContent.TrimStart();
             if (trimmed.StartsWith("<FlowDocument", StringComparison.OrdinalIgnoreCase))
             {
@@ -481,10 +484,41 @@ namespace DesktopStickyNote
                 {
                     FlowDocument doc = (FlowDocument)XamlReader.Parse(savedContent);
                     doc.PagePadding = new Thickness(0);
-                    Style pStyle = new Style(typeof(Paragraph));
-                    pStyle.Setters.Add(new Setter(Paragraph.MarginProperty, new Thickness(0)));
-                    doc.Resources.Add(typeof(Paragraph), pStyle);
+                    // Use indexer assignment instead of .Add() to prevent System.ArgumentException
+                    // when the serialized FlowDocument already contains the Paragraph style key
+                    doc.Resources[typeof(Paragraph)] = pStyle;
+
+                    // Automatically unwrap if raw FlowDocument XAML was ever saved as plain text inside a paragraph
+                    bool unnested = false;
+                    while (true)
+                    {
+                        TextRange tr = new TextRange(doc.ContentStart, doc.ContentEnd);
+                        string innerText = tr.Text.Trim();
+                        if (innerText.StartsWith("<FlowDocument", StringComparison.OrdinalIgnoreCase))
+                        {
+                            try
+                            {
+                                FlowDocument innerDoc = (FlowDocument)XamlReader.Parse(innerText);
+                                innerDoc.PagePadding = new Thickness(0);
+                                innerDoc.Resources[typeof(Paragraph)] = pStyle;
+                                doc = innerDoc;
+                                unnested = true;
+                                continue;
+                            }
+                            catch
+                            {
+                                break;
+                            }
+                        }
+                        break;
+                    }
+
                     NoteRichTextBox.Document = doc;
+                    if (unnested)
+                    {
+                        _settings.Text = GetDocumentXaml();
+                        _storage.SaveImmediate(_settings);
+                    }
                     return;
                 }
                 catch (Exception ex)
