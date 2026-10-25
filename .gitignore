@@ -1,0 +1,17 @@
+# Build and Output Folders
+bin/
+obj/
+src/obj/
+tests/obj/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
